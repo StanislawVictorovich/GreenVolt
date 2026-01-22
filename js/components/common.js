@@ -8,7 +8,6 @@
 					'<input v-model="login" class="form-control mb-2" placeholder="login">' +
 					'<input v-model="password" type="password" class="form-control mb-3" placeholder="password">' +
 					'<button class="btn btn-primary w-100" @click="doLogin">Войти</button>' +
-					'<div class="text-muted small mt-3">admin/admin — ADMIN (может удалять). manager/manager — MANAGER (может добавлять и собирать).</div>' +
 				'</div>' +
 			'</div>' +
 		'</div>',
