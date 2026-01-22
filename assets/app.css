@@ -1,0 +1,7 @@
+.card,
+.btn,
+.form-control,
+.form-select,
+.nav-link {
+	border-radius: 0;
+}
