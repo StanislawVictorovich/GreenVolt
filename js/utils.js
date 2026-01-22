@@ -1,32 +1,55 @@
 (function () {
 	function uid(prefix) {
-		return prefix + "_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+		return (prefix || "id") + "_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+	}
+
+	function toInt(v) {
+		var n = parseInt(v, 10);
+		return isNaN(n) ? 0 : n;
+	}
+
+	function toNum(v) {
+		var n = parseFloat(v);
+		return isNaN(n) ? 0 : n;
+	}
+
+	function round2(v) {
+		return Math.round(v * 100) / 100;
 	}
 
 	function clone(obj) {
 		return JSON.parse(JSON.stringify(obj));
 	}
 
-	function download(name, data) {
-		var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+	function downloadJson(filename, obj) {
+		var data = JSON.stringify(obj, null, 2);
+		var blob = new Blob([data], { type: "application/json" });
 		var a = document.createElement("a");
 		a.href = URL.createObjectURL(blob);
-		a.download = name;
+		a.download = filename;
 		a.click();
 	}
 
-	function read(file, cb) {
+	function readJsonFile(file, cb, errCb) {
 		var r = new FileReader();
 		r.onload = function () {
-			cb(JSON.parse(r.result));
+			try {
+				cb(JSON.parse(r.result));
+			} catch (e) {
+				if (errCb) errCb(e);
+			}
 		};
+		r.onerror = function (e) { if (errCb) errCb(e); };
 		r.readAsText(file);
 	}
 
 	window.Utils = {
 		uid: uid,
+		toInt: toInt,
+		toNum: toNum,
+		round2: round2,
 		clone: clone,
-		download: download,
-		read: read
+		downloadJson: downloadJson,
+		readJsonFile: readJsonFile
 	};
-})();
+})(); 

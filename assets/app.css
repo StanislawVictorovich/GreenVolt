@@ -1,7 +1,31 @@
+:root {
+	--app-border: rgba(0,0,0,.12);
+}
+
 .card,
 .btn,
 .form-control,
 .form-select,
-.nav-link {
-	border-radius: 0;
+.nav-pills .nav-link,
+.badge {
+	border-radius: 0 !important;
+}
+
+.table td,
+.table th {
+	vertical-align: middle;
+}
+
+.app-header {
+	background: #ffffff;
+	border: 1px solid var(--app-border);
+}
+
+.app-panel {
+	background: #ffffff;
+	border: 1px solid var(--app-border);
+}
+
+.mono {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }

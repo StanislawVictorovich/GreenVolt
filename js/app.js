@@ -3,7 +3,7 @@ new Vue({
 	store: AppStore,
 	template:
 	'<div>' +
-		'<login-view v-if="!$store.getters.isAuth"></login-view>' +
-		'<main-view v-else></main-view>' +
+		'<app-login v-if="!$store.getters.isAuth"></app-login>' +
+		'<app-shell v-else></app-shell>' +
 	'</div>'
 });

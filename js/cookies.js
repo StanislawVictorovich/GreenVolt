@@ -8,7 +8,7 @@
 
 	function getCookie(name) {
 		var n = name + "=";
-		var ca = document.cookie.split(';');
+		var ca = document.cookie.split(";");
 		for (var i = 0; i < ca.length; i++) {
 			var c = ca[i].trim();
 			if (c.indexOf(n) === 0) {
