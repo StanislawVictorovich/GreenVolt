@@ -33,7 +33,7 @@
 		'<div class="app-header p-2 px-3 mb-3 d-flex align-items-center justify-content-between">' +
 			'<div>' +
 				'<div class="h5 mb-0">Mini ERP</div>' +
-				'<div class="small text-muted">Vue 2.6 + Vuex (CDN) + Bootstrap 5.3, хранение: localStorage, авторизация: cookie 24ч</div>' +
+				'<div class="small text-muted">Vue 2.6 + Vuex (CDN) + Bootstrap 5.3</div>' +
 			'</div>' +
 			'<div class="text-end">' +
 				'<div><b>{{ user.login }}</b> <span class="badge text-bg-secondary">{{ user.role }}</span></div>' +
