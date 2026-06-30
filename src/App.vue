@@ -1,7 +1,7 @@
 <template>
-  <SetupDatabase v-if="!isDatabaseReady" />
-  <LoginView v-else-if="!isAuthenticated" />
-  <AppLayout v-else />
+    <SetupDatabase v-if="!isDatabaseReady" />
+    <LoginView v-else-if="!isAuthenticated" />
+    <AppLayout v-else />
 </template>
 
 <script setup>

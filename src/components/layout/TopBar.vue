@@ -1,11 +1,11 @@
 <template>
-  <div class="topbar">
-    <div>
-      <strong>{{ user.name }}</strong>
-      <span class="pill">{{ user.role }}</span>
+    <div class="topbar">
+        <div>
+            <strong>{{ user.name }}</strong>
+            <span class="pill">{{ user.role }}</span>
+        </div>
+        <button class="btn btn-light" @click="logout">Выйти</button>
     </div>
-    <button class="btn btn-light" @click="logout">Выйти</button>
-  </div>
 </template>
 
 <script setup>
@@ -16,6 +16,6 @@ const store = useStore();
 const user = computed(() => store.state.auth.currentUser || {});
 
 function logout() {
-  store.dispatch('auth/logout');
+    store.dispatch('auth/logout');
 }
 </script>

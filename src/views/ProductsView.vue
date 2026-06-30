@@ -1,42 +1,42 @@
 <template>
-  <section>
-    <PageHeader title="Готовый товар / продажи" description="Серийный учёт товара, бронь и продажа покупателю из контактов." />
+    <section>
+        <PageHeader title="Готовый товар / продажи" description="Серийный учёт товара, бронь и продажа покупателю из контактов." />
 
-    <BaseCard v-if="canManage" title="Продать выбранный товар">
-      <form class="form-grid" @submit.prevent="sell">
-        <label>Серийный товар
-          <select v-model="sellForm.id" required>
-            <option value="">Выбрать</option>
-            <option v-for="unit in sellableUnits" :key="unit.id" :value="unit.id">
-              {{ unit.serial }} — {{ unit.productName }}
-            </option>
-          </select>
-        </label>
-        <label>Покупатель
-          <select v-model="sellForm.buyerContactId">
-            <option value="">Без контакта</option>
-            <option v-for="buyer in buyers" :key="buyer.id" :value="buyer.id">{{ buyer.name }}</option>
-          </select>
-        </label>
-        <label>Дата продажи <input v-model="sellForm.dateSold" type="date" /></label>
-        <label>Цена продажи <input v-model.number="sellForm.salePrice" type="number" min="0" step="0.01" /></label>
-        <div class="form-actions full">
-          <button class="btn btn-primary" type="submit">Продать</button>
-        </div>
-      </form>
-    </BaseCard>
+        <BaseCard v-if="canManage" title="Продать выбранный товар">
+            <form class="form-grid" @submit.prevent="sell">
+                <label>Серийный товар
+                    <select v-model="sellForm.id" required>
+                        <option value="">Выбрать</option>
+                        <option v-for="unit in sellableUnits" :key="unit.id" :value="unit.id">
+                            {{ unit.serial }} — {{ unit.productName }}
+                        </option>
+                    </select>
+                </label>
+                <label>Покупатель
+                    <select v-model="sellForm.buyerContactId">
+                        <option value="">Без контакта</option>
+                        <option v-for="buyer in buyers" :key="buyer.id" :value="buyer.id">{{ buyer.name }}</option>
+                    </select>
+                </label>
+                <label>Дата продажи <input v-model="sellForm.dateSold" type="date" /></label>
+                <label>Цена продажи <input v-model.number="sellForm.salePrice" type="number" min="0" step="0.01" /></label>
+                <div class="form-actions full">
+                    <button class="btn btn-primary" type="submit">Продать</button>
+                </div>
+            </form>
+        </BaseCard>
 
-    <BaseCard title="Готовый товар">
-      <EntityTable :rows="rows" :columns="columns">
-        <template v-if="canManage" #actions="{ row }">
-          <button v-if="row.status !== 'SOLD'" class="link-btn" @click="reserve(row.id)">
-            {{ row.status === 'RESERVED' ? 'Снять бронь' : 'В бронь' }}
-          </button>
-          <button v-if="row.status !== 'SOLD'" class="link-btn danger" @click="remove(row.id)">Удалить</button>
-        </template>
-      </EntityTable>
-    </BaseCard>
-  </section>
+        <BaseCard title="Готовый товар">
+            <EntityTable :rows="rows" :columns="columns">
+                <template v-if="canManage" #actions="{ row }">
+                    <button v-if="row.status !== 'SOLD'" class="link-btn" @click="reserve(row.id)">
+                        {{ row.status === 'RESERVED' ? 'Снять бронь' : 'В бронь' }}
+                    </button>
+                    <button v-if="row.status !== 'SOLD'" class="link-btn danger" @click="remove(row.id)">Удалить</button>
+                </template>
+            </EntityTable>
+        </BaseCard>
+    </section>
 </template>
 
 <script setup>
@@ -54,14 +54,14 @@ const buyers = computed(() => store.getters['contacts/buyers']);
 const sellableUnits = computed(() => rows.value.filter((item) => item.status !== 'SOLD'));
 const sellForm = reactive({ id: '', buyerContactId: '', dateSold: today(), salePrice: 0 });
 const columns = [
-  { key: 'serial', label: 'Серийный' },
-  { key: 'productName', label: 'Товар' },
-  { key: 'dateManufactured', label: 'Дата изготовления' },
-  { key: 'status', label: 'Статус', format: statusText },
-  { key: 'cost', label: 'Себестоимость', format: money },
-  { key: 'salePrice', label: 'Продажа', format: money },
-  { key: 'profit', label: 'Прибыль', format: money },
-  { key: 'buyerName', label: 'Покупатель' }
+    { key: 'serial', label: 'Серийный' },
+    { key: 'productName', label: 'Товар' },
+    { key: 'dateManufactured', label: 'Дата изготовления' },
+    { key: 'status', label: 'Статус', format: statusText },
+    { key: 'cost', label: 'Себестоимость', format: money },
+    { key: 'salePrice', label: 'Продажа', format: money },
+    { key: 'profit', label: 'Прибыль', format: money },
+    { key: 'buyerName', label: 'Покупатель' }
 ];
 
 function statusText(value) { return { IN_STOCK: 'В наличии', RESERVED: 'В броне', SOLD: 'Продано' }[value] || value; }
