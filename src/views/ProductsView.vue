@@ -1,10 +1,10 @@
 <template>
     <section>
-        <PageHeader title="Готовый товар / продажи" description="Серийный учёт товара, бронь и продажа покупателю из контактов." />
+        <PageHeader title="Готовые устройства / продажи" description="Серийный учёт устройства, бронь и продажа покупателю из контактов." />
 
-        <BaseCard v-if="canManage" title="Продать выбранный товар">
+        <BaseCard v-if="canManage" title="Продать выбранное устройство">
             <form class="form-grid" @submit.prevent="sell">
-                <label>Серийный товар
+                <label>Серийное устройство
                     <select v-model="sellForm.id" required>
                         <option value="">Выбрать</option>
                         <option v-for="unit in sellableUnits" :key="unit.id" :value="unit.id">
@@ -26,7 +26,7 @@
             </form>
         </BaseCard>
 
-        <BaseCard title="Готовый товар">
+        <BaseCard title="Готовые устройства">
             <EntityTable :rows="rows" :columns="columns">
                 <template v-if="canManage" #actions="{ row }">
                     <button v-if="row.status !== 'SOLD'" class="link-btn" @click="reserve(row.id)">
@@ -55,7 +55,7 @@ const sellableUnits = computed(() => rows.value.filter((item) => item.status !==
 const sellForm = reactive({ id: '', buyerContactId: '', dateSold: today(), salePrice: 0 });
 const columns = [
     { key: 'serial', label: 'Серийный' },
-    { key: 'productName', label: 'Товар' },
+    { key: 'productName', label: 'Устройство' },
     { key: 'dateManufactured', label: 'Дата изготовления' },
     { key: 'status', label: 'Статус', format: statusText },
     { key: 'cost', label: 'Себестоимость', format: money },
@@ -68,5 +68,5 @@ function statusText(value) { return { IN_STOCK: 'В наличии', RESERVED: '
 function money(value) { return `${Number(value || 0).toFixed(2)} грн`; }
 function reserve(id) { store.dispatch('operations/reserveProduct', id); }
 function sell() { store.dispatch('operations/sellProduct', { ...sellForm }); Object.assign(sellForm, { id: '', buyerContactId: '', dateSold: today(), salePrice: 0 }); }
-function remove(id) { if (confirm('Удалить готовый товар? Комплектующие вернутся в остаток, потому что расход считается от списка готовых товаров.')) store.dispatch('operations/deleteProductUnit', id); }
+function remove(id) { if (confirm('Удалить готовое устройство? Комплектующие вернутся в остаток, потому что расход считается от списка готовых устройств.')) store.dispatch('operations/deleteProductUnit', id); }
 </script>

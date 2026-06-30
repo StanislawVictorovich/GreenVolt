@@ -30,6 +30,93 @@ function assertPositiveQuantity(quantity, message = 'Количество дол
     if (normalizeNumber(quantity) <= 0) throw new Error(message);
 }
 
+function normalizeParts(items, multiplier = 1) {
+    return (items || [])
+        .filter((item) => item.partId && normalizeNumber(item.quantity) > 0)
+        .map((item) => ({
+            partId: item.partId,
+            quantity: normalizeNumber(item.quantity) * normalizeNumber(multiplier)
+        }));
+}
+
+function normalizeComponents(items) {
+    return (items || [])
+        .filter((item) => item.componentId && normalizeNumber(item.quantity) > 0)
+        .map((item) => ({
+            componentId: item.componentId,
+            quantity: normalizeNumber(item.quantity)
+        }));
+}
+
+function findByName(items, name) {
+    const normalizedName = String(name || '').trim().toLowerCase();
+    if (!normalizedName) return null;
+    return items.find((item) => String(item.name || '').trim().toLowerCase() === normalizedName) || null;
+}
+
+function resolveComponent(rootState, commit, payload) {
+    if (payload.componentId) {
+        const component = rootState.catalog.components.find((item) => item.id === payload.componentId);
+        if (!component) throw new Error('Комплектующая не найдена.');
+        return component;
+    }
+
+    const name = String(payload.componentName || '').trim();
+    if (!name) throw new Error('Укажи название комплектующей.');
+
+    const existingComponent = findByName(rootState.catalog.components, name);
+    if (existingComponent) return existingComponent;
+
+    const component = {
+        id: createId('cmp'),
+        name,
+        unit: payload.unit || 'шт',
+        comment: payload.componentComment || payload.comment || ''
+    };
+
+    commit('catalog/UPSERT_COMPONENT', component, { root: true });
+    return component;
+}
+
+function saveComponentCard(rootState, commit, componentId, payload) {
+    const existingCard = rootState.catalog.componentRecipes.find((item) => item.componentId === componentId);
+    const cardItems = (payload.items || [])
+        .filter((item) => item.partId && normalizeNumber(item.quantity) > 0)
+        .map((item) => ({ partId: item.partId, quantity: normalizeNumber(item.quantity) }));
+
+    if (!cardItems.length) return;
+
+    commit('catalog/UPSERT_COMPONENT_RECIPE', {
+        id: existingCard?.id || createId('ccrd'),
+        componentId,
+        items: cardItems,
+        comment: payload.comment || ''
+    }, { root: true });
+}
+
+function resolveDeviceRecipe(rootState, commit, payload, componentsUsed) {
+    if (payload.productRecipeId) {
+        const recipe = rootState.catalog.productRecipes.find((item) => item.id === payload.productRecipeId);
+        if (!recipe) throw new Error('Устройство не найдено.');
+        return recipe;
+    }
+
+    const name = String(payload.deviceName || payload.name || '').trim();
+    if (!name) throw new Error('Укажи название устройства.');
+
+    const existingRecipe = findByName(rootState.catalog.productRecipes, name);
+    const recipe = {
+        id: existingRecipe?.id || createId('dev'),
+        name,
+        sku: payload.sku || existingRecipe?.sku || '',
+        items: componentsUsed.map((item) => ({ ...item })),
+        comment: payload.comment || existingRecipe?.comment || ''
+    };
+
+    commit('catalog/UPSERT_PRODUCT_RECIPE', recipe, { root: true });
+    return recipe;
+}
+
 export default {
     namespaced: true,
     state: createDefaultOperationsState,
@@ -118,7 +205,7 @@ export default {
             assertPositiveQuantity(quantity);
 
             const recipe = rootState.catalog.componentRecipes.find((item) => item.componentId === payload.componentId);
-            if (!recipe || !recipe.items.length) throw new Error('Для комплектующей не создан рецепт.');
+            if (!recipe || !recipe.items.length) throw new Error('Для комплектующей не задан состав деталей.');
 
             const partsUsed = recipe.items.map((item) => ({
                 partId: item.partId,
@@ -145,10 +232,42 @@ export default {
                 comment: payload.comment || ''
             });
         },
+        assembleComponentFromParts({ commit, rootState, rootGetters }, payload) {
+            requireAssembler(rootGetters);
+
+            const quantity = normalizeNumber(payload.quantity || 1);
+            assertPositiveQuantity(quantity);
+
+            const partsUsed = normalizeParts(payload.items, quantity);
+            if (!partsUsed.length) throw new Error('Добавь хотя бы одну деталь.');
+
+            for (const item of partsUsed) {
+                const available = getPartAvailableQuantity(rootState, item.partId);
+                if (available < item.quantity) throw new Error('Недостаточно деталей на складе.');
+            }
+
+            const component = resolveComponent(rootState, commit, payload);
+            const totalCost = roundMoney(
+                partsUsed.reduce((total, item) => total + getPartAverageCost(rootState, item.partId) * item.quantity, 0)
+            );
+
+            saveComponentCard(rootState, commit, component.id, payload);
+
+            commit('ADD_COMPONENT_BATCH', {
+                id: createId('cbt'),
+                date: payload.date || today(),
+                componentId: component.id,
+                quantity,
+                partsUsed,
+                unitCost: quantity ? roundMoney(totalCost / quantity) : 0,
+                totalCost,
+                comment: payload.comment || ''
+            });
+        },
         assembleProduct({ commit, rootState, rootGetters }, payload) {
             requireAssembler(rootGetters);
             const recipe = rootState.catalog.productRecipes.find((item) => item.id === payload.productRecipeId);
-            if (!recipe || !recipe.items.length) throw new Error('Для товара не создан список комплектующих.');
+            if (!recipe || !recipe.items.length) throw new Error('Для устройства не создан список комплектующих.');
 
             const serial = (payload.serial || '').trim();
             if (!serial) throw new Error('Укажи уникальный серийный номер.');
@@ -162,10 +281,46 @@ export default {
 
             for (const item of componentsUsed) {
                 const available = getComponentAvailableQuantity(rootState, item.componentId);
-                if (available < item.quantity) throw new Error('Недостаточно комплектующих для сборки товара.');
+                if (available < item.quantity) throw new Error('Недостаточно комплектующих для сборки устройства.');
             }
 
             const cost = getProductRecipeCost(rootState, recipe.id);
+
+            commit('ADD_PRODUCT_UNIT', {
+                id: createId('unit'),
+                serial,
+                productRecipeId: recipe.id,
+                dateManufactured: payload.dateManufactured || today(),
+                dateSold: '',
+                buyerContactId: '',
+                salePrice: 0,
+                cost,
+                status: 'IN_STOCK',
+                componentsUsed,
+                comment: payload.comment || ''
+            });
+        },
+        assembleDevice({ commit, rootState, rootGetters }, payload) {
+            requireAssembler(rootGetters);
+
+            const serial = String(payload.serial || '').trim();
+            if (!serial) throw new Error('Укажи уникальный серийный номер.');
+
+            const exists = rootState.operations.productUnits.some((item) => item.serial === serial);
+            if (exists) throw new Error('Такой серийный номер уже есть.');
+
+            const componentsUsed = normalizeComponents(payload.componentsUsed || payload.items);
+            if (!componentsUsed.length) throw new Error('Добавь хотя бы одну комплектующую.');
+
+            for (const item of componentsUsed) {
+                const available = getComponentAvailableQuantity(rootState, item.componentId);
+                if (available < item.quantity) throw new Error('Недостаточно комплектующих на складе.');
+            }
+
+            const recipe = resolveDeviceRecipe(rootState, commit, payload, componentsUsed);
+            const cost = roundMoney(
+                componentsUsed.reduce((total, item) => total + getComponentAverageCost(rootState, item.componentId) * item.quantity, 0)
+            );
 
             commit('ADD_PRODUCT_UNIT', {
                 id: createId('unit'),
@@ -190,8 +345,8 @@ export default {
         sellProduct({ commit, state, rootGetters }, payload) {
             requireAdmin(rootGetters);
             const unit = state.productUnits.find((item) => item.id === payload.id);
-            if (!unit) throw new Error('Товар не найден.');
-            if (unit.status === 'SOLD') throw new Error('Товар уже продан.');
+            if (!unit) throw new Error('Устройство не найдено.');
+            if (unit.status === 'SOLD') throw new Error('Устройство уже продано.');
 
             commit('UPDATE_PRODUCT_UNIT', {
                 ...unit,

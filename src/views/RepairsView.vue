@@ -26,7 +26,7 @@
                         <option value="DONE">Возвращён</option>
                     </select>
                 </label>
-                <RecipeItemsEditor v-model="form.componentsUsed" :options="components" item-key="componentId" />
+                <ItemsEditor v-model="form.componentsUsed" :options="components" item-key="componentId" />
                 <label>Комментарий <textarea v-model="form.comment" /></label>
                 <div class="form-actions">
                     <button class="btn btn-primary" type="submit">{{ form.id ? 'Сохранить' : 'Добавить ремонт' }}</button>
@@ -51,7 +51,7 @@ import { useStore } from 'vuex';
 import BaseCard from '../components/common/BaseCard.vue';
 import EntityTable from '../components/common/EntityTable.vue';
 import PageHeader from '../components/common/PageHeader.vue';
-import RecipeItemsEditor from '../components/common/RecipeItemsEditor.vue';
+import ItemsEditor from '../components/common/ItemsEditor.vue';
 import { today } from '../utils/id';
 
 const store = useStore();

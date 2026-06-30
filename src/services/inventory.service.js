@@ -174,7 +174,7 @@ export function buildProductRows(state) {
 
         return {
             ...unit,
-            productName: recipe?.name || 'Удалённый товар',
+            productName: recipe?.name || 'Удалённое устройство',
             buyerName: buyer?.name || '',
             profit: unit.status === 'SOLD' ? roundMoney(Number(unit.salePrice || 0) - Number(unit.cost || 0)) : 0
         };

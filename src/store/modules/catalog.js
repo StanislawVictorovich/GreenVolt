@@ -109,7 +109,7 @@ export default {
             requireAdmin(rootGetters);
             commit('UPSERT_PRODUCT_RECIPE', {
                 id: payload.id || createId('prcp'),
-                name: payload.name?.trim() || 'Товар',
+                name: payload.name?.trim() || 'Устройство',
                 sku: payload.sku || '',
                 items: (payload.items || [])
                     .filter((item) => item.componentId && Number(item.quantity) > 0)
