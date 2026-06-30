@@ -1,59 +1,17 @@
-name: Deploy GreenVolt CRM ERP to GitHub Pages
+# This workflow is intentionally disabled.
+# GitHub Pages for this project should be configured as:
+# Settings -> Pages -> Build and deployment -> Source: Deploy from a branch
+# Branch: main or master, Folder: /docs
+#
+# Reason: actions/deploy-pages can get stuck in deployment_queued on some repositories.
+# The project ships a prebuilt /docs folder, so GitHub Pages can publish it directly.
+name: Disabled Pages Deploy
 
 on:
-  push:
-    branches:
-      - main
-      - master
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Do not cancel an already-created Pages deployment in the middle of deployment.
-# The old version used group: pages + cancel-in-progress: true, which can produce
-# "Error: Deployment cancelled" when you push or re-run several times quickly.
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  build:
-    name: Build Vue app
+  info:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Build production bundle
-        run: npm run build
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy artifact
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - run: echo "Deployment is disabled. Use GitHub Pages -> Deploy from a branch -> /docs."
