@@ -1,0 +1,19 @@
+# Keep project source files with LF endings on every OS.
+# This prevents Windows Git warning:
+# "LF will be replaced by CRLF the next time Git touches it".
+* text=auto eol=lf
+
+# Binary files must never be line-ending-normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.svg text eol=lf
+*.zip binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
